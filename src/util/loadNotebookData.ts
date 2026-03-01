@@ -1,5 +1,6 @@
 import { Notice } from "obsidian";
-import { convertTarToPdf } from "./saveToPdf";
+import { convertTarToPdf, exportImagesFromTar } from "./saveToPdf";
+import { processNotebookPages } from "services/OpenRouterService";
 
 type Metadata = {
     "metadata": { "currentPage": number, "modificationTime": number, "title": string, "totalPages": number },
@@ -22,7 +23,12 @@ const getPageData = async (renderingToken: string, startPage: number, endPage: n
     });
     return await response.arrayBuffer();
 };
-export const getNotebookData = async (fileId: string, noteName: string, fetchCallback: (functionCode: string) => any) => {
+
+function uint8ArrayToRawBase64(uint8Array: Uint8Array): string {
+    return Buffer.from(uint8Array).toString('base64');
+}
+
+export async function getNotebookData(fileId: string, noteName: string, fetchCallback: (functionCode: string) => any, openRouterKey: string, model: string) {
     const pagesData: ArrayBuffer[] = [];
     
     try {
@@ -40,7 +46,9 @@ export const getNotebookData = async (fileId: string, noteName: string, fetchCal
 
         // Now convert everything at once
         console.log("All data fetched. Compiling PDF...");
+        const images = await exportImagesFromTar(pagesData.map(page => page.slice(0)));
         await convertTarToPdf(pagesData, noteName);
+        await processNotebookPages([...images].reverse().map(image => new Uint8Array(image.data.buffer.slice(0))).map(uint8ArrayToRawBase64), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
         console.log("Notebook conversion complete!");
         new Notice(`note ${noteName} converted`)
 

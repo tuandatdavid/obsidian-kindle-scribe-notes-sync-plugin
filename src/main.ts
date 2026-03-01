@@ -1,5 +1,6 @@
 import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
 import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
+import { ReactModalWrapper } from './components/ReactModalWrapper';
 
 // Remember to rename these classes and interfaces!
 
@@ -24,7 +25,8 @@ export default class MyPlugin extends Plugin {
 			id: 'open-modal-simple',
 			name: 'Open modal (simple)',
 			callback: () => {
-				new SampleModal(this.app).open();
+				console.log('open modal')
+				new ReactModalWrapper(this.app, { openRouterKey: this.settings.openRouterApiKey, model: this.settings.model }).open();
 			}
 		});
 		// This adds an editor command that can perform some operation on the current editor instance

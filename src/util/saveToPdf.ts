@@ -1,6 +1,44 @@
 import untar from 'js-untar';
 import jsPDF from 'jspdf';
 import { TFile, Notice, normalizePath } from 'obsidian';
+
+//TODO: move
+export const exportImagesFromTar = async (allTarBuffers: ArrayBuffer[]) => {
+
+    const allImages: { name: string, data: Uint8Array }[] = [];
+
+    // 1. Extract images from all TAR chunks
+    for (const buffer of allTarBuffers) {
+        const files = await untar(buffer);
+
+        for (const file of files) {
+            if (file.name.toLowerCase().endsWith(".png") && !file.name.includes("PaxHeaders")) {
+                const uint8View = new Uint8Array(file.buffer);
+
+                // Find PNG signature offset
+                let offset = -1;
+                for (let i = 0; i < Math.min(uint8View.length, 1024); i++) {
+                    if (uint8View[i] === 0x89 && uint8View[i + 1] === 0x50 &&
+                        uint8View[i + 2] === 0x4E && uint8View[i + 3] === 0x47) {
+                        offset = i;
+                        break;
+                    }
+                }
+
+                if (offset !== -1) {
+                    allImages.push({
+                        name: file.name,
+                        data: uint8View.slice(offset)
+                    });
+                }
+            }
+        }
+    }
+
+    // 2. Sort ALL images globally (important since chunks might arrive out of order)
+    return allImages;
+}
+
 export const convertTarToPdf = async (allTarBuffers: ArrayBuffer[], noteName: string) => {
     try {
         const pdf = new jsPDF({
@@ -9,39 +47,7 @@ export const convertTarToPdf = async (allTarBuffers: ArrayBuffer[], noteName: st
             format: "a4"
         });
 
-        const allImages: { name: string, data: Uint8Array }[] = [];
-
-        // 1. Extract images from all TAR chunks
-        for (const buffer of allTarBuffers) {
-            const files = await untar(buffer);
-            
-            for (const file of files) {
-                if (file.name.toLowerCase().endsWith(".png") && !file.name.includes("PaxHeaders")) {
-                    const uint8View = new Uint8Array(file.buffer);
-                    
-                    // Find PNG signature offset
-                    let offset = -1;
-                    for (let i = 0; i < Math.min(uint8View.length, 1024); i++) {
-                        if (uint8View[i] === 0x89 && uint8View[i+1] === 0x50 && 
-                            uint8View[i+2] === 0x4E && uint8View[i+3] === 0x47) {
-                            offset = i;
-                            break;
-                        }
-                    }
-
-                    if (offset !== -1) {
-                        allImages.push({
-                            name: file.name,
-                            data: uint8View.slice(offset)
-                        });
-                    }
-                }
-            }
-        }
-
-        // 2. Sort ALL images globally (important since chunks might arrive out of order)
-        allImages.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-
+        const allImages = await exportImagesFromTar(allTarBuffers);
         if (allImages.length === 0) {
             console.error("No images found in any of the notebook chunks.");
             return;
@@ -67,7 +73,7 @@ export const convertTarToPdf = async (allTarBuffers: ArrayBuffer[], noteName: st
 };
 
 
-async function savePdfToVault(pdf: any, folderPath: string, fileName: string) {
+export async function savePdfToVault(pdf: any, folderPath: string, fileName: string) {
     // 1. Get ArrayBuffer directly from jsPDF
     const pdfBuffer: ArrayBuffer = pdf.output("arraybuffer");
     
