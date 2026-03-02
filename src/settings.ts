@@ -1,5 +1,5 @@
 import {App, PluginSettingTab, Setting } from "obsidian";
-import MyPlugin from "./main";
+import MyPlugin from "./index";
 
 export interface MyPluginSettings {
 	openRouterApiKey: string;
@@ -11,7 +11,7 @@ export const DEFAULT_SETTINGS: MyPluginSettings = {
 	model: 'google/gemini-3-flash-preview'
 }
 
-export class SampleSettingTab extends PluginSettingTab {
+export class ScribeSettingsTab extends PluginSettingTab {
 	plugin: MyPlugin;
 
 	constructor(app: App, plugin: MyPlugin) {

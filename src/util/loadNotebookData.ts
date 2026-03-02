@@ -34,11 +34,11 @@ export async function getNotebookData(fileId: string, noteName: string, fetchCal
     try {
         const { metadata, renderingToken } = await fetchCallback(`(${getMetadata.toString()})('${fileId}');`);
         
-        console.log(`Starting fetch for ${metadata.totalPages} pages...`);
+        new Notice(`Starting fetch for ${metadata.totalPages} pages...`);
 
         for (let i = 0; i < metadata.totalPages; i += 3) {
-            const end = Math.min(i + 3, metadata.totalPages);
-            console.log(`Fetching pages ${i} to ${end}`);
+            const end = Math.min(i + 2, metadata.totalPages);
+            new Notice(`Fetching pages ${i} to ${end}`);
             
             const chunk = await fetchCallback(`(${getPageData.toString()})('${renderingToken}', ${i}, ${end});`);
             pagesData.push(chunk);
@@ -48,8 +48,7 @@ export async function getNotebookData(fileId: string, noteName: string, fetchCal
         console.log("All data fetched. Compiling PDF...");
         const images = await exportImagesFromTar(pagesData.map(page => page.slice(0)));
         await convertTarToPdf(pagesData, noteName);
-        await processNotebookPages([...images].reverse().map(image => new Uint8Array(image.data.buffer.slice(0))).map(uint8ArrayToRawBase64), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
-        console.log("Notebook conversion complete!");
+        await processNotebookPages([...images].map(image => new Uint8Array(image.data.buffer.slice(0))).map(uint8ArrayToRawBase64), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
         new Notice(`note ${noteName} converted`)
 
     } catch (e) {

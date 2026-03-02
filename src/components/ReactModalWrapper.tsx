@@ -31,11 +31,9 @@ export class ReactModalWrapper extends Modal {
     }
 
     onClose() {
-        // 3. IMPORTANT: Unmount the root when the modal closes
         this.root?.unmount();
         this.root = null;
         
-        // Standard Obsidian cleanup
         this.contentEl.empty();
     }
 }

@@ -9,6 +9,7 @@ export const exportImagesFromTar = async (allTarBuffers: ArrayBuffer[]) => {
 
     // 1. Extract images from all TAR chunks
     for (const buffer of allTarBuffers) {
+        const currentImages: { name: string, data: Uint8Array }[] = [];
         const files = await untar(buffer);
 
         for (const file of files) {
@@ -26,13 +27,15 @@ export const exportImagesFromTar = async (allTarBuffers: ArrayBuffer[]) => {
                 }
 
                 if (offset !== -1) {
-                    allImages.push({
+                    currentImages.push({
                         name: file.name,
                         data: uint8View.slice(offset)
                     });
                 }
             }
         }
+        currentImages.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+        allImages.push(...currentImages);
     }
 
     // 2. Sort ALL images globally (important since chunks might arrive out of order)

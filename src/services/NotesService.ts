@@ -1,6 +1,7 @@
 import { BrowserWindow, remote } from 'electron';
 import { FileData } from 'types/Notebook';
 import { getNotebookData } from '../util/loadNotebookData';
+import AmazonLoginModal from 'amazonLogin/amazonLoginModal';
 
 const { BrowserWindow: RemoteBrowserWindow } = remote;
 
@@ -38,8 +39,8 @@ class NotesService {
     }
 
     async getNotesData(): Promise<FileData[]> {
-        while (!this.isReady) {
-            continue
+        if(!this.isReady) {
+            new AmazonLoginModal().doLogin();
         }
         const result = await this.modal.webContents.executeJavaScript(`(${getNotesFetch.toString()})();`);
         return result;

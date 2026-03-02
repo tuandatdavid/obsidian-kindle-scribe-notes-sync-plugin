@@ -49,7 +49,7 @@ export const NotesView = ({ app, modal }: Props) => {
     const loadingComponent = <div>Loading...</div>;
 
     return (
-        <div style={{ maxHeight: '500px' }} className="file-modal">
+        <div style={{ maxHeight: '500px', overflowY: 'scroll' }} className="file-modal">
             <h1>Kindle Notes list</h1>
             <p>Notes</p>
             {!notes ? loadingComponent : <NotesList objects={notes} />}

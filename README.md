@@ -7,12 +7,13 @@ Sync your Kindle Scribe notes to your Obsidian Vault.
 
 Current functionality:
 - [x] pulling notes from root folder 
+- [x] pulling notes from subfolders and recreating that structure in Obsidian Vault.
+- [x] notes OCR
+    - [x] first iteration will be just using OpenRouter API
 
-Planned functionality:
-- [ ] pulling notes from subfolders and recreating that structure in Obsidian Vault.
-- [ ] notes OCR
-    - [ ] first iteration will be just using OpenRouter API
-
+Roadmap:
+- [ ] separate out OCR and download flow
+- [ ] autosync of notes
 
 ## License
 

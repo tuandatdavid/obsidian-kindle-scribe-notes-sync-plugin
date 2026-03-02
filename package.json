@@ -1,8 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-kindle-scribe-notes-sync-plugin",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
-	"main": "main.js",
+	"description": "This is a plugin for Obsidian (https://obsidian.md) to retrieve Kindle Scribe notes",
 	"type": "module",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
