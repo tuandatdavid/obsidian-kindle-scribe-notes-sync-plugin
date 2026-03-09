@@ -1,8 +1,9 @@
-const electron = require('electron');
-const { BrowserWindow } = electron.remote || electron;
+import { BrowserWindow, remote } from 'electron';
+
+const { BrowserWindow: RemoteBrowserWindow } = remote;
 
 export default class AmazonLoginModal {
-  private modal: any;
+  private modal: BrowserWindow;
   private waitForSignIn: Promise<boolean>;
   private resolvePromise!: (success: boolean) => void;
 
@@ -12,7 +13,7 @@ export default class AmazonLoginModal {
       (resolve: (success: boolean) => void) => (this.resolvePromise = resolve)
     );
 
-    this.modal = new BrowserWindow({
+    this.modal = new RemoteBrowserWindow({
       width: 450,
       height: 730,
       show: false,

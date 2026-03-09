@@ -76,7 +76,7 @@ export const convertTarToPdf = async (allTarBuffers: ArrayBuffer[], noteName: st
 };
 
 
-export async function savePdfToVault(pdf: any, folderPath: string, fileName: string) {
+export async function savePdfToVault(pdf: jsPDF, folderPath: string, fileName: string) {
     // 1. Get ArrayBuffer directly from jsPDF
     const pdfBuffer: ArrayBuffer = pdf.output("arraybuffer");
     

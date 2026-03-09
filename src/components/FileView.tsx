@@ -1,4 +1,4 @@
-import { App } from "obsidian";
+import { App, Modal } from "obsidian";
 import React, { useEffect, useState } from "react";
 import { notesService } from "services/NotesService";
 import { FileData } from "types/Notebook";
@@ -6,7 +6,7 @@ import { useSettings } from "./SettingsContext";
 
 interface Props {
     app: App;
-    modal: any;
+    modal: Modal;
 }
 
 const Note = ({ file }: { file: FileData }) => {

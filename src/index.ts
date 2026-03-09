@@ -1,11 +1,11 @@
-import {App, Modal, Plugin} from 'obsidian';
-import {DEFAULT_SETTINGS, MyPluginSettings, ScribeSettingsTab} from "./settings";
+import { Plugin } from 'obsidian';
+import { DEFAULT_SETTINGS, ScribeNotesSettings, ScribeSettingsTab } from "./settings";
 import { ReactModalWrapper } from 'components/ReactModalWrapper';
 
 // Remember to rename these classes and interfaces!
 
-export default class MyPlugin extends Plugin {
-    settings: MyPluginSettings;
+export default class KindleScribeNotesPlugin extends Plugin {
+    settings: ScribeNotesSettings;
 
     async onload() {
         await this.loadSettings();
@@ -23,7 +23,7 @@ export default class MyPlugin extends Plugin {
         // });
 
         // When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-        this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+        
 
     }
 
@@ -31,8 +31,8 @@ export default class MyPlugin extends Plugin {
     }
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
-        
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<ScribeNotesSettings>);
+
     }
 
     async saveSettings() {

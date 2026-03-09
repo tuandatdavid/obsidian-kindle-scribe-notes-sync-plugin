@@ -1,20 +1,20 @@
 import {App, PluginSettingTab, Setting } from "obsidian";
-import MyPlugin from "./index";
+import KindleScribeNotesPlugin from "./index";
 
-export interface MyPluginSettings {
+export interface ScribeNotesSettings {
 	openRouterApiKey: string;
 	model: string
 }
 
-export const DEFAULT_SETTINGS: MyPluginSettings = {
+export const DEFAULT_SETTINGS: ScribeNotesSettings = {
 	openRouterApiKey: '',
-	model: 'google/gemini-3-flash-preview'
+	model: 'google/gemini-3.1-flash-lite-preview'
 }
 
 export class ScribeSettingsTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: KindleScribeNotesPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: KindleScribeNotesPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -25,8 +25,8 @@ export class ScribeSettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('OpenRouter API Key')
-			.setDesc('Enter your OpenRouter API key. This is stored locally in your vault\'s data.json file.')
+			.setName('OpenRouter API key')
+			.setDesc('Enter your OpenRouter API key. This is stored locally in your vault\'s data.json file.') // Added period
 			.addText(text => {
 				// Mask the input visually
 				text.inputEl.type = 'password';
@@ -42,7 +42,7 @@ export class ScribeSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Model')
-			.setDesc('Enter your chosen Model')
+			.setDesc('Enter your chosen Model.')
 			.addText(text => {
 				text.setPlaceholder('google/gemini-3-flash-preview')
 					.setValue(this.plugin.settings.model)

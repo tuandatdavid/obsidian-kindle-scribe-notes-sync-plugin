@@ -28,11 +28,11 @@ function uint8ArrayToRawBase64(uint8Array: Uint8Array): string {
     return Buffer.from(uint8Array).toString('base64');
 }
 
-export async function getNotebookData(fileId: string, noteName: string, fetchCallback: (functionCode: string) => any, openRouterKey: string, model: string) {
+export async function getNotebookData(fileId: string, noteName: string, fetchCallback: (functionCode: string) => unknown, openRouterKey: string, model: string) {
     const pagesData: ArrayBuffer[] = [];
     
     try {
-        const { metadata, renderingToken } = await fetchCallback(`(${getMetadata.toString()})('${fileId}');`);
+        const { metadata, renderingToken } = await fetchCallback(`(${getMetadata.toString()})('${fileId}');`) as Metadata;
         
         new Notice(`Starting fetch for ${metadata.totalPages} pages...`);
 
@@ -40,7 +40,7 @@ export async function getNotebookData(fileId: string, noteName: string, fetchCal
             const end = Math.min(i + 2, metadata.totalPages);
             new Notice(`Fetching pages ${i} to ${end}`);
             
-            const chunk = await fetchCallback(`(${getPageData.toString()})('${renderingToken}', ${i}, ${end});`);
+            const chunk = await fetchCallback(`(${getPageData.toString()})('${renderingToken}', ${i}, ${end});`) as ArrayBuffer;
             pagesData.push(chunk);
         }
 
