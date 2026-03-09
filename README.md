@@ -13,7 +13,7 @@ Current functionality:
 
 Roadmap:
 - [ ] separate out OCR and download flow
-- [ ] autosync of notes
+- [ ] autocheck notes
 
 ## License
 
