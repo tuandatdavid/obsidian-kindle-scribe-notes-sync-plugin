@@ -23,7 +23,7 @@ export class ReactModalWrapper extends Modal {
         // Tip: Pass 'this.app' so your React components can access the Vault API
         this.root.render(
             <React.StrictMode>
-                <SettingsProvider settings={this.settings}>
+                <SettingsProvider settings={this.settings} app={this.app}>
                     <NotesView app={this.app} modal={this} />
                 </SettingsProvider>
             </React.StrictMode>

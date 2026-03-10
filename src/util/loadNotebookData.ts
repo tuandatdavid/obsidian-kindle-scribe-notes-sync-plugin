@@ -1,4 +1,4 @@
-import { arrayBufferToBase64, Notice } from "obsidian";
+import { App, arrayBufferToBase64, Notice } from "obsidian";
 import { convertTarToPdf, exportImagesFromTar } from "./saveToPdf";
 import { processNotebookPages } from "services/OpenRouterService";
 import { getAmazonApi, getChunk } from "./getAmazonCookies";
@@ -8,7 +8,7 @@ type Metadata = {
     "readingSessionId": string, "renderingToken": string
 };
 
-export async function getNotebookData(fileId: string, noteName: string, openRouterKey: string, model: string) {
+export async function getNotebookData(app: App, fileId: string, noteName: string, openRouterKey: string, model: string) {
     const pagesData: ArrayBuffer[] = [];
     
     try {
@@ -26,7 +26,7 @@ export async function getNotebookData(fileId: string, noteName: string, openRout
 
         const images = await exportImagesFromTar(pagesData.map(page => page.slice(0)));
         await convertTarToPdf(pagesData, noteName);
-        await processNotebookPages(images.map(image => arrayBufferToBase64(image.data.buffer as ArrayBuffer)), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
+        await processNotebookPages(app, images.map(image => arrayBufferToBase64(image.data.buffer as ArrayBuffer)), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
         new Notice(`note ${noteName} converted`)
     } catch (e) {
         console.error("Notebook Data Error:", e);

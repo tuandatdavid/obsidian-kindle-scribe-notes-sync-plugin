@@ -1,6 +1,5 @@
 import { BrowserWindow, remote } from 'electron';
 import { FileData } from 'types/Notebook';
-import { getNotebookData } from '../util/loadNotebookData';
 import AmazonLoginModal from 'amazonLogin/amazonLoginModal';
 import { getAmazonApi } from '../util/getAmazonCookies';
 
@@ -38,10 +37,6 @@ class NotesService {
         }
         const result = await getAmazonApi<{ itemsList: FileData[] }>('https://read.amazon.com/kindle-notebook/api/notes');
         return result.itemsList;
-    }
-
-    async downloadNote(fileId: string, name: string, key: string, model: string) {
-        await getNotebookData(fileId, name, key, model);
     }
 }
 

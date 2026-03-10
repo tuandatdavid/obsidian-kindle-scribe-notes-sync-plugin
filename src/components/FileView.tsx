@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { notesService } from "services/NotesService";
 import { FileData } from "types/Notebook";
 import { useSettings } from "./SettingsContext";
+import { getNotebookData } from "../util/loadNotebookData";
 
 interface Props {
     app: App;
@@ -11,11 +12,11 @@ interface Props {
 
 const Note = ({ file }: { file: FileData }) => {
     const [isProcessing, setIsProcessing] = useState(false);
-    const { settings } = useSettings();
+    const { settings, app } = useSettings();
 
     const processNote = (file: FileData) => {
         setIsProcessing(true);
-        notesService.downloadNote(file.id, file.title, settings.openRouterKey, settings.model).then(() => {
+        getNotebookData(app, file.id, file.title, settings.openRouterKey, settings.model).then(() => {
             setIsProcessing(false);
         }).catch((e) => {
             //TODO: better error handling

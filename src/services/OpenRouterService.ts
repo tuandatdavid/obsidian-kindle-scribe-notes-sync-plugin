@@ -1,5 +1,5 @@
 import { OpenRouter } from '@openrouter/sdk';
-import { Notice, normalizePath, TFile } from 'obsidian';
+import { Notice, normalizePath, TFile, App } from 'obsidian';
 
 interface NotebookAnalysis {
     text: string;
@@ -52,8 +52,9 @@ async function analyzeNotebookPage(
             }});
 
             if (response.choices[0] !== undefined) {
-                const content = response.choices[0].message.content;
-                return JSON.parse(content);
+                const content = response.choices[0].message.content as string;
+                //todo: add validation
+                return JSON.parse(content) as NotebookAnalysis;
             } 
 
         } catch (error) {
@@ -72,21 +73,21 @@ async function analyzeNotebookPage(
  * crops out sketches, and saves a final Markdown file.
  */
 export async function processNotebookPages(
+    app: App,
     imageB64List: string[], 
     folderPath: string, 
     fileName: string,
     apiKey: string,
     modelId: string
 ) {
-    console.log('starting processing');
     const dirPath = normalizePath(folderPath);
     const attachmentPath = normalizePath(`${dirPath}/attachments`);
-    
-    // Ensure folders exist
-    if (!(await this.app.vault.adapter.exists(dirPath))) await this.app.vault.createFolder(dirPath);
-    if (!(await this.app.vault.adapter.exists(attachmentPath))) await this.app.vault.createFolder(attachmentPath);
-
     let fullMarkdown = "";
+        
+    // Ensure folders exist
+    if (!(await app.vault.adapter.exists(dirPath))) await app.vault.createFolder(dirPath);
+    if (!(await app.vault.adapter.exists(attachmentPath))) await app.vault.createFolder(attachmentPath);
+
 
     for (let i = 0; i < imageB64List.length; i++) {
         const imgBase64 = imageB64List[i];
@@ -105,7 +106,7 @@ export async function processNotebookPages(
                 const croppedBlob = await cropImage(imgBase64, crop.box_2d);
                 
                 // Save the cropped image to vault
-                await saveBinaryToVault(cropPath, await croppedBlob.arrayBuffer());
+                await saveBinaryToVault(app, cropPath, await croppedBlob.arrayBuffer());
 
                 // Replace the placeholder {{IMG_1}} with an Obsidian link ![[image.png]]
                 const placeholder = `{{${crop.id}}}`;
@@ -123,7 +124,7 @@ export async function processNotebookPages(
 
     // 3. Save the final Markdown file
     const mdFilePath = normalizePath(`${dirPath}/${fileName}.md`);
-    await saveTextToVault(mdFilePath, fullMarkdown.trim());
+    await saveTextToVault(app, mdFilePath, fullMarkdown.trim());
     new Notice(`Finished! Notes saved to ${mdFilePath}`);
 }
 
@@ -134,7 +135,7 @@ async function cropImage(base64: string, box: [number, number, number, number]):
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
-            if (!ctx) return reject("Could not get canvas context");
+            if (!ctx) return reject(new Error('Could not get canvas context'));
 
             // Convert 0-1000 scale to actual pixel dimensions
             const ymin = (box[0] / 1000) * img.height;
@@ -152,7 +153,7 @@ async function cropImage(base64: string, box: [number, number, number, number]):
             
             canvas.toBlob((blob) => {
                 if (blob) resolve(blob);
-                else reject("Canvas to Blob failed");
+                else reject(new Error("Canvas to Blob failed"));
             }, 'image/png');
         };
         img.src = `data:image/png;base64,${base64}`;
@@ -162,23 +163,23 @@ async function cropImage(base64: string, box: [number, number, number, number]):
 /**
  * Helper: Save binary data (like images) to vault
  */
-async function saveBinaryToVault(path: string, data: ArrayBuffer) {
-    const existingFile = this.app.vault.getAbstractFileByPath(path);
+async function saveBinaryToVault(app: App, path: string, data: ArrayBuffer) {
+    const existingFile = app.vault.getAbstractFileByPath(path);
     if (existingFile instanceof TFile) {
-        await this.app.vault.modifyBinary(existingFile, data);
+        await app.vault.modifyBinary(existingFile, data);
     } else {
-        await this.app.vault.createBinary(path, data);
+        await app.vault.createBinary(path, data);
     }
 }
 
 /**
  * Helper: Save text (Markdown) to vault
  */
-async function saveTextToVault(path: string, content: string) {
-    const existingFile = this.app.vault.getAbstractFileByPath(path);
+async function saveTextToVault(app: App, path: string, content: string) {
+    const existingFile = app.vault.getAbstractFileByPath(path);
     if (existingFile instanceof TFile) {
-        await this.app.vault.modify(existingFile, content);
+        await app.vault.modify(existingFile, content);
     } else {
-        await this.app.vault.create(path, content);
+        await app.vault.create(path, content);
     }
 }

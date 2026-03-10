@@ -1,3 +1,4 @@
+import { App } from 'obsidian';
 import React, { createContext, useContext } from 'react';
 
 //todo: better types
@@ -5,14 +6,15 @@ interface SettingsContextType {
     settings: {
         openRouterKey: string,
         model: string,
-    }
+    },
+    app: App
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-export const SettingsProvider: React.FC<{ children: React.ReactNode, settings: { openRouterKey: string, model: string } }> = ({ children, settings }) => {
+export const SettingsProvider: React.FC<{ children: React.ReactNode, settings: { openRouterKey: string, model: string }, app: App }> = ({ children, settings, app }) => {
     return (
-        <SettingsContext.Provider value={{ settings }}>
+        <SettingsContext.Provider value={{ settings, app }}>
             {children}
         </SettingsContext.Provider>
     );
