@@ -10,7 +10,7 @@ export default class KindleScribeNotesPlugin extends Plugin {
     async onload() {
         await this.loadSettings();
 
-        this.addRibbonIcon('notebook-pen', 'Kindle Scribe notes convert', async () => {
+        this.addRibbonIcon('notebook-pen', 'Scribe notes convert', async () => {
             new ReactModalWrapper(this.app, { openRouterKey: this.settings.openRouterApiKey, model: this.settings.model }).open();
         });
 

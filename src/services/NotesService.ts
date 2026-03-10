@@ -18,8 +18,8 @@ class NotesService {
             show: false,
         });
 
-        modal.once('ready-to-show', async () => {
-            setTimeout(async () => {
+        modal.once('ready-to-show', () => {
+            setTimeout(() => {
                 this.isReady = true;
             }, 1500);
         });
@@ -27,16 +27,16 @@ class NotesService {
         this.load();
     }
 
-    private async load() {
-        await this.modal.loadURL('https://read.amazon.com/kindle-notebook?ref_=neo_mm_yn_na_kfa',
+    private load() {
+        void this.modal.loadURL('https://read.amazon.com/kindle-notebook?ref_=neo_mm_yn_na_kfa',
             { userAgent: 'Mozilla/5.0 (Linux; Android 15.0.0 r12; Z832 Build/MMB29M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.7559.53 Mobile Safari/537.36' });
     }
 
     async getNotesData(): Promise<FileData[]> {
         if(!this.isReady) {
-            new AmazonLoginModal().doLogin();
+            await new AmazonLoginModal().doLogin();
         }
-        const result = await getAmazonApi('https://read.amazon.com/kindle-notebook/api/notes');
+        const result = await getAmazonApi<{ itemsList: FileData[] }>('https://read.amazon.com/kindle-notebook/api/notes');
         return result.itemsList;
     }
 

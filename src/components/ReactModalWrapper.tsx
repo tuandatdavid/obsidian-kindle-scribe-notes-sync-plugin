@@ -18,7 +18,7 @@ export class ReactModalWrapper extends Modal {
 
         // 1. Initialize the React root on the modal's content element
         this.root = createRoot(contentEl);
-        this.setTitle('Kindle Notes list');
+        this.setTitle('Kindle notes list');
         // 2. Render your component
         // Tip: Pass 'this.app' so your React components can access the Vault API
         this.root.render(

@@ -13,10 +13,15 @@ const Note = ({ file }: { file: FileData }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const { settings } = useSettings();
 
-    const processNote = async (file: FileData) => {
+    const processNote = (file: FileData) => {
         setIsProcessing(true);
-        await notesService.downloadNote(file.id, file.title, settings.openRouterKey, settings.model)
-        setIsProcessing(false);
+        notesService.downloadNote(file.id, file.title, settings.openRouterKey, settings.model).then(() => {
+            setIsProcessing(false);
+        }).catch((e) => {
+            //TODO: better error handling
+            console.error(e);
+            setIsProcessing(false);
+        });
     }
     return <li>
         <div style={{ display: 'grid', marginRight: '30px', gridTemplateColumns: '1fr auto', marginTop: '15px', alignItems: 'center' }}>
@@ -48,7 +53,10 @@ const NotesList = ({ objects }: { objects: FileData[] }) => {
 export const NotesView = ({ app, modal }: Props) => {
     const [notes, setNotes] = useState<FileData[]>();
     useEffect(() => {
-        (async () => setNotes(await notesService.getNotesData()))();
+        notesService.getNotesData().then(setNotes).catch(() => {
+            //TODO: better error handling
+            console.error('Failed to retrieve notes, try again.');
+        });
     }, []);
 
     const loadingComponent = <div>Loading...</div>;

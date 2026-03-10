@@ -1,4 +1,5 @@
-import { requestUrl, RequestUrlParam, Notice, normalizePath, TFile } from 'obsidian';
+import { OpenRouter } from '@openrouter/sdk';
+import { Notice, normalizePath, TFile } from 'obsidian';
 
 interface NotebookAnalysis {
     text: string;
@@ -11,7 +12,9 @@ async function analyzeNotebookPage(
     modelId: string, 
     maxRetries: number = 3
 ): Promise<NotebookAnalysis> {
-    
+    const openRouter = new OpenRouter({
+        apiKey
+    });
     const prompt = `
     Analyze this notebook page.
     1. Transcribe all handwritten text into clean Markdown.
@@ -27,59 +30,31 @@ async function analyzeNotebookPage(
     }
     `;
 
-    const payload = {
-        model: modelId,
-        messages: [
-            {
-                role: "user",
-                content: [
-                    { type: "text", text: prompt },
-                    {
-                        type: "image_url",
-                        image_url: { url: `data:image/png;base64,${imgBase64}` }
-                    }
-                ]
-            }
-        ],
-        temperature: 0.3,
-        response_format: { type: "json_object" }
-    };
-
-    const url = "https://openrouter.ai/api/v1/chat/completions";
-
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-            const params: RequestUrlParam = {
-                url: url,
-                method: 'POST',
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": "https://obsidian.md",
-                    "X-Title": "Obsidian Kindle Processor"
-                },
-                body: JSON.stringify(payload),
-                throw: false // Allows us to handle status codes manually
-            };
+            const response = await openRouter.chat.send({
+                chatGenerationParams: {
+                    model: modelId,
+                    messages: [
+                        {
+                            role: "user",
+                            content: [
+                                { type: "text", text: prompt },
+                                {
+                                    type: "image_url",
+                                    imageUrl: { url: `data:image/png;base64,${imgBase64}` }
+                                }
+                            ]
+                        }
+                    ],
+                    temperature: 0.3,
+                    responseFormat: { type: "json_object" }
+            }});
 
-            const response = await requestUrl(params);
-
-            if (response.status === 200) {
-                const content = response.json.choices[0].message.content as string;
+            if (response.choices[0] !== undefined) {
+                const content = response.choices[0].message.content;
                 return JSON.parse(content);
             } 
-            
-            if (response.status === 429) {
-                const retryHeader = response.headers['retry-after'];
-                const retryAfter = retryHeader? parseInt(retryHeader): 15;
-                if (attempt < maxRetries - 1) {
-                    new Notice(`Rate limit hit. Retrying in ${retryAfter}s...`);
-                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
-                    continue;
-                }
-            }
-
-            throw new Error(`API Error ${response.status}: ${response.text}`);
 
         } catch (error) {
             console.error("Analysis failed:", error);

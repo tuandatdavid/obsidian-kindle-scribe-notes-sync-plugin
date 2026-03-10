@@ -1,4 +1,4 @@
-import { Notice } from "obsidian";
+import { arrayBufferToBase64, Notice } from "obsidian";
 import { convertTarToPdf, exportImagesFromTar } from "./saveToPdf";
 import { processNotebookPages } from "services/OpenRouterService";
 import { getAmazonApi, getChunk } from "./getAmazonCookies";
@@ -8,15 +8,11 @@ type Metadata = {
     "readingSessionId": string, "renderingToken": string
 };
 
-function uint8ArrayToRawBase64(uint8Array: Uint8Array): string {
-    return Buffer.from(uint8Array).toString('base64');
-}
-
 export async function getNotebookData(fileId: string, noteName: string, openRouterKey: string, model: string) {
     const pagesData: ArrayBuffer[] = [];
     
     try {
-        const { metadata, renderingToken } = await getAmazonApi(`https://read.amazon.com/openNotebook?notebookId=${fileId}&marketplaceId=ATVPDKIKX0DER`) as Metadata;
+        const { metadata, renderingToken } = await getAmazonApi<Metadata>(`https://read.amazon.com/openNotebook?notebookId=${fileId}&marketplaceId=ATVPDKIKX0DER`);
         
         new Notice(`Starting fetch for ${metadata.totalPages} pages...`);
 
@@ -30,7 +26,7 @@ export async function getNotebookData(fileId: string, noteName: string, openRout
 
         const images = await exportImagesFromTar(pagesData.map(page => page.slice(0)));
         await convertTarToPdf(pagesData, noteName);
-        await processNotebookPages([...images].map(image => new Uint8Array(image.data.buffer.slice(0))).map(uint8ArrayToRawBase64), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
+        await processNotebookPages(images.map(image => arrayBufferToBase64(image.data.buffer as ArrayBuffer)), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
         new Notice(`note ${noteName} converted`)
     } catch (e) {
         console.error("Notebook Data Error:", e);

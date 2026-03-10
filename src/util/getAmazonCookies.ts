@@ -1,5 +1,5 @@
 import { remote } from "electron";
-import { requestUrl, RequestUrlResponse, RequestUrlResponsePromise } from "obsidian";
+import { requestUrl } from "obsidian";
 
 export const getAmazonCookies = async (): Promise<string> => {
     const ses = remote.session.defaultSession;
@@ -11,7 +11,7 @@ export const getAmazonCookies = async (): Promise<string> => {
     return cookies.map(c => `${c.name}=${c.value}`).join('; ');
 };
 
-export const getChunk = async (endpointUrl: string, renderingToken: string) => {
+export const getChunk = async (endpointUrl: string, renderingToken: string): Promise<ArrayBuffer> => {
     const result = await requestUrl({
         url: endpointUrl,
         headers: {
@@ -22,7 +22,7 @@ export const getChunk = async (endpointUrl: string, renderingToken: string) => {
     return result.arrayBuffer;
 };
 
-export const getAmazonApi = async (endpointUrl: string, headers?: object) => {
+export const getAmazonApi = async <T extends object>(endpointUrl: string, headers?: object): Promise<T> => {
     const result = await requestUrl({
         url: endpointUrl,
         headers: {
@@ -30,5 +30,5 @@ export const getAmazonApi = async (endpointUrl: string, headers?: object) => {
             ...headers
         }
     })
-    return await result.json;
+    return await result.json as T;
 };

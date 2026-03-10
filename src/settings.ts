@@ -25,12 +25,12 @@ export class ScribeSettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('OpenRouter API key')
-			.setDesc('Enter your OpenRouter API key. This is stored locally in your vault data.json file.') // Added period
+			.setName('Openrouter API key')
+			.setDesc('Enter your openrouter API key. This is going to be stored in data.json file.') // Added period
 			.addText(text => {
-				// Mask the input visually
 				text.inputEl.type = 'password';
 
+				//eslint-disable-next-line obsidianmd/ui/sentence-case
 				text.setPlaceholder('sk-or-v1-...')
 					.setValue(this.plugin.settings.openRouterApiKey)
 					.onChange(async (value) => {
@@ -42,8 +42,9 @@ export class ScribeSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Model')
-			.setDesc('Enter your chosen Model.')
+			.setDesc('Enter your chosen model')
 			.addText(text => {
+				//eslint-disable-next-line obsidianmd/ui/sentence-case
 				text.setPlaceholder('google/gemini-3-flash-preview')
 					.setValue(this.plugin.settings.model)
 					.onChange(async (value) => {

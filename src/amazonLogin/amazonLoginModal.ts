@@ -21,14 +21,13 @@ export default class AmazonLoginModal {
 
     // We can only change title after page is loaded since HTML page has its own title
     this.modal.once('ready-to-show', () => {
-      this.modal.setTitle('Connect your Amazon account to Obsidian');
+      this.modal.setTitle('Connect your amazon account to Obsidian');
       this.modal.show();
     });
 
     // If user is on the read.amazon.com url, we can safely assume they are logged in
     this.modal.webContents.on('did-navigate', (_event, url) => {
       if (url.startsWith('https://read.amazon.com')) {
-        console.log('is logged in')
         this.modal.close();
         this.resolvePromise(true);
       }
@@ -42,7 +41,7 @@ export default class AmazonLoginModal {
   async doLogin(): Promise<boolean> {
     try {
       await this.modal.loadURL('https://read.amazon.com/notebook');
-    } catch (error) {
+    } catch {
       // Swallow error. `loadUrl` is interrupted on successful
       // login as we immediately redirect if user is logged in
     }
