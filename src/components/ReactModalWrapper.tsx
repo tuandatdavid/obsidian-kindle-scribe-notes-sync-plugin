@@ -24,7 +24,7 @@ export class ReactModalWrapper extends Modal {
         this.root.render(
             <React.StrictMode>
                 <SettingsProvider settings={this.settings}>
-                <NotesView app={this.app} modal={this} />
+                    <NotesView app={this.app} modal={this} />
                 </SettingsProvider>
             </React.StrictMode>
         );

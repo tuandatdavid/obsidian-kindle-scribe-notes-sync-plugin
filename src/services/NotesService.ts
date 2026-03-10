@@ -2,16 +2,10 @@ import { BrowserWindow, remote } from 'electron';
 import { FileData } from 'types/Notebook';
 import { getNotebookData } from '../util/loadNotebookData';
 import AmazonLoginModal from 'amazonLogin/amazonLoginModal';
+import { getAmazonApi } from '../util/getAmazonCookies';
 
 const { BrowserWindow: RemoteBrowserWindow } = remote;
 
-
-    const getNotesFetch = async () => {
-        const response = await fetch("https://read.amazon.com/kindle-notebook/api/notes", {
-            "credentials": "include"
-        });
-        return JSON.parse(await response.text()).itemsList;
-    };
 
 
 class NotesService {
@@ -42,12 +36,12 @@ class NotesService {
         if(!this.isReady) {
             new AmazonLoginModal().doLogin();
         }
-        const result = await this.modal.webContents.executeJavaScript(`(${getNotesFetch.toString()})();`);
-        return result;
+        const result = await getAmazonApi('https://read.amazon.com/kindle-notebook/api/notes');
+        return result.itemsList;
     }
 
     async downloadNote(fileId: string, name: string, key: string, model: string) {
-        await getNotebookData(fileId, name, async (code) => await this.modal.webContents.executeJavaScript(code), key, model);
+        await getNotebookData(fileId, name, key, model);
     }
 }
 

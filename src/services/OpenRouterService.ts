@@ -65,7 +65,7 @@ async function analyzeNotebookPage(
             const response = await requestUrl(params);
 
             if (response.status === 200) {
-                const content = response.json.choices[0].message.content;
+                const content = response.json.choices[0].message.content as string;
                 return JSON.parse(content);
             } 
             

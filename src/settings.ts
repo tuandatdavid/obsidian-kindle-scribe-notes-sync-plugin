@@ -26,7 +26,7 @@ export class ScribeSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('OpenRouter API key')
-			.setDesc('Enter your OpenRouter API key. This is stored locally in your vault\'s data.json file.') // Added period
+			.setDesc('Enter your OpenRouter API key. This is stored locally in your vault data.json file.') // Added period
 			.addText(text => {
 				// Mask the input visually
 				text.inputEl.type = 'password';
