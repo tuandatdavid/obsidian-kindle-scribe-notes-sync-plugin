@@ -1,10 +1,9 @@
 import untar from 'js-untar';
 import jsPDF from 'jspdf';
-import { TFile, Notice, normalizePath } from 'obsidian';
+import { TFile, Notice, normalizePath, App } from 'obsidian';
 
 //TODO: move
-export const exportImagesFromTar = async (allTarBuffers: ArrayBuffer[]) => {
-
+export const exportImagesFromTar = async (allTarBuffers: ArrayBuffer[]) => { 
     const allImages: { name: string, data: Uint8Array }[] = [];
 
     // 1. Extract images from all TAR chunks
@@ -42,7 +41,7 @@ export const exportImagesFromTar = async (allTarBuffers: ArrayBuffer[]) => {
     return allImages;
 }
 
-export const convertTarToPdf = async (allTarBuffers: ArrayBuffer[], noteName: string) => {
+export const convertTarToPdf = async (app: App, allTarBuffers: ArrayBuffer[], noteName: string) => {
     try {
         const pdf = new jsPDF({
             orientation: "p",
@@ -64,11 +63,10 @@ export const convertTarToPdf = async (allTarBuffers: ArrayBuffer[], noteName: st
 
             // Add image stretched to fill A4 (210x297mm)
             pdf.addImage(image.data, 'PNG', 0, 0, 210, 297);
-            console.log(`Added to master PDF: ${image.name}`);
         }
 
         // 4. Save the final result
-        savePdfToVault(pdf, 'scribe notes', noteName);
+        void savePdfToVault(app, pdf, 'scribe notes', noteName);
 
     } catch (error) {
         console.error("Master PDF conversion failed:", error);
@@ -76,7 +74,7 @@ export const convertTarToPdf = async (allTarBuffers: ArrayBuffer[], noteName: st
 };
 
 
-export async function savePdfToVault(pdf: jsPDF, folderPath: string, fileName: string) {
+export async function savePdfToVault(app: App, pdf: jsPDF, folderPath: string, fileName: string) {
     // 1. Get ArrayBuffer directly from jsPDF
     const pdfBuffer: ArrayBuffer = pdf.output("arraybuffer");
     
@@ -85,19 +83,19 @@ export async function savePdfToVault(pdf: jsPDF, folderPath: string, fileName: s
     const filePath = normalizePath(`${dirPath}/${fileName}.pdf`);
 
     // 3. Ensure the folder exists
-    if (!(await this.app.vault.adapter.exists(dirPath))) {
-        await this.app.vault.createFolder(dirPath);
+    if (!(await app.vault.adapter.exists(dirPath))) {
+        await app.vault.createFolder(dirPath);
     }
 
-    const existingFile = this.app.vault.getAbstractFileByPath(filePath);
+    const existingFile = app.vault.getAbstractFileByPath(filePath);
 
     if (existingFile instanceof TFile) {
         // Update existing binary file
-        await this.app.vault.modifyBinary(existingFile, pdfBuffer);
+        await app.vault.modifyBinary(existingFile, pdfBuffer);
         new Notice(`Updated PDF: ${existingFile.name}`);
     } else {
         // Create new binary file
-        await this.app.vault.createBinary(filePath, pdfBuffer);
+        await app.vault.createBinary(filePath, pdfBuffer);
         new Notice(`Saved PDF to: ${filePath}`);
     }
 }
