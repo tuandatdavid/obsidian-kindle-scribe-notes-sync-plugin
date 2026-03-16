@@ -1,8 +1,1 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+@keyframes loading{0%{transform:rotate(0)}to{transform:rotate(360deg)}}.rotate{animation:loading 3s linear infinite}.notes-content{max-height:400px;min-height:200px;overflow-y:scroll;border-radius:var(--modal-radius);border:var(--modal-border-color) var(--modal-border-width) solid}.file-modal{max-height:500px;transition:height .15s ease-out}

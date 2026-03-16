@@ -6,6 +6,9 @@ import { useSettings } from "./SettingsContext";
 import { getNotebookData } from "../util/loadNotebookData";
 import { useQuery } from "@tanstack/react-query";
 import { amazonLogoutModal } from "../amazonLogin/amazonLogoutModal";
+import { LoaderCircle, RefreshCcwDot } from "lucide-react";
+import { LoadingComponent } from './LoadingComponent';
+import './rotate.css';
 
 interface Props {
     modal: Modal;
@@ -26,7 +29,7 @@ const Note = ({ file }: { file: FileData }) => {
         });
     }
     return <>
-        <div style={{ display: 'grid', marginRight: '30px', gridTemplateColumns: '1fr auto', marginTop: '15px', alignItems: 'center' }}>
+        <div style={{ display: 'grid', marginLeft: '30px', marginRight: '30px', gridTemplateColumns: '1fr auto', marginTop: '15px', alignItems: 'center' }}>
             {file.title}
             {isProcessing ? <div>processing...</div> :
                 <button onClick={() => processNote(file)}>Download and process note</button>
@@ -41,37 +44,36 @@ const NotesList = ({ objects }: { objects: FileData[] }) => {
             <NotesList objects={folder.items} />
         </details>;
     }
-    return <div style={{ maxHeight: '300px', overflowY: 'scroll' }}>
-        <ul>
+    return <div>
             {objects.map(file => {
                 if (file.type == 'folder')
                     return renderFolder(file);
                 return <Note file={file} />
             })}
-        </ul>
     </div>
 };
 
 export const NotesView = ({ modal }: Props) => {
-    const { data, isLoading, refetch } = useQuery({
+    const { data, isLoading, isRefetching, refetch } = useQuery({
         queryKey: ['notes'],
         queryFn: notesService.getNotesData,
     });
 
-
-    const loadingComponent = <div>Loading...</div>;
+    const contentLoading = !data || isLoading || isRefetching;
 
     return (
         <div className="file-modal">
-            <p>Notes</p>
-            <button onClick={() => {
-                void refetch();
-            }}>Refetch</button>
-            <button onClick={() => {
-                void amazonLogoutModal();
-            }}>Logout</button>
-            {isLoading || !data ? loadingComponent : <NotesList objects={data} />}
-            <button onClick={() => modal.close()}>Close Modal</button>
+            <div style={{ display: 'grid', gap: '15px', justifyContent: 'end', paddingBottom: '15px', gridAutoFlow: 'column' }}>
+                <button disabled={contentLoading} onClick={() => {
+                    void refetch();
+                }}>{contentLoading? <LoaderCircle className="rotate" /> : <RefreshCcwDot />}</button>
+                <button onClick={() => {
+                    void amazonLogoutModal();
+                }}>Logout from Amazon</button>
+            </div>
+            <div className="notes-content">
+            {contentLoading ? <LoadingComponent /> : <NotesList objects={data} />}    
+            </div>
         </div>
     );
 };

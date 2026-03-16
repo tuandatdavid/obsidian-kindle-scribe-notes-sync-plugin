@@ -20,12 +20,11 @@ export class ReactModalWrapper extends Modal {
 
         this.root = createRoot(contentEl);
         this.setTitle('Kindle notes list');
-
         this.root.render(
             <React.StrictMode>
                 <SettingsProvider settings={this.settings} app={this.app}>
                     <QueryClientProvider client={queryClient}>
-                    <NotesView modal={this} />
+                        <NotesView modal={this} />
                     </QueryClientProvider>
                 </SettingsProvider>
             </React.StrictMode>
