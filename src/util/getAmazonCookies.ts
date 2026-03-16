@@ -6,7 +6,6 @@ export const getAmazonCookies = async (): Promise<string> => {
 
     // Get cookies for amazon.com
     const cookies = await ses.cookies.get({ domain: '.amazon.com' });
-
     // Map them into a string format you can use in your headers
     return cookies.map(c => `${c.name}=${c.value}`).join('; ');
 };

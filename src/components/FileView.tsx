@@ -1,12 +1,13 @@
-import { App, Modal } from "obsidian";
-import React, { useEffect, useState } from "react";
+import { Modal } from "obsidian";
+import React, { useState } from "react";
 import { notesService } from "services/NotesService";
 import { FileData } from "types/Notebook";
 import { useSettings } from "./SettingsContext";
 import { getNotebookData } from "../util/loadNotebookData";
+import { useQuery } from "@tanstack/react-query";
+import { amazonLogoutModal } from "../amazonLogin/amazonLogoutModal";
 
 interface Props {
-    app: App;
     modal: Modal;
 }
 
@@ -24,13 +25,13 @@ const Note = ({ file }: { file: FileData }) => {
             setIsProcessing(false);
         });
     }
-    return <li>
+    return <>
         <div style={{ display: 'grid', marginRight: '30px', gridTemplateColumns: '1fr auto', marginTop: '15px', alignItems: 'center' }}>
             {file.title}
             {isProcessing ? <div>processing...</div> :
                 <button onClick={() => processNote(file)}>Download and process note</button>
             }</div>
-    </li>
+    </>
 }
 
 const NotesList = ({ objects }: { objects: FileData[] }) => {
@@ -51,21 +52,25 @@ const NotesList = ({ objects }: { objects: FileData[] }) => {
     </div>
 };
 
-export const NotesView = ({ app, modal }: Props) => {
-    const [notes, setNotes] = useState<FileData[]>();
-    useEffect(() => {
-        notesService.getNotesData().then(setNotes).catch(() => {
-            //TODO: better error handling
-            console.error('Failed to retrieve notes, try again.');
-        });
-    }, []);
+export const NotesView = ({ modal }: Props) => {
+    const { data, isLoading, refetch } = useQuery({
+        queryKey: ['notes'],
+        queryFn: notesService.getNotesData,
+    });
+
 
     const loadingComponent = <div>Loading...</div>;
 
     return (
         <div className="file-modal">
             <p>Notes</p>
-            {!notes ? loadingComponent : <NotesList objects={notes} />}
+            <button onClick={() => {
+                void refetch();
+            }}>Refetch</button>
+            <button onClick={() => {
+                void amazonLogoutModal();
+            }}>Logout</button>
+            {isLoading || !data ? loadingComponent : <NotesList objects={data} />}
             <button onClick={() => modal.close()}>Close Modal</button>
         </div>
     );

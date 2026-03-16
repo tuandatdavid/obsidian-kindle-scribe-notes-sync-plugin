@@ -160,9 +160,6 @@ async function cropImage(base64: string, box: [number, number, number, number]):
     });
 }
 
-/**
- * Helper: Save binary data (like images) to vault
- */
 async function saveBinaryToVault(app: App, path: string, data: ArrayBuffer) {
     const existingFile = app.vault.getAbstractFileByPath(path);
     if (existingFile instanceof TFile) {
@@ -172,9 +169,6 @@ async function saveBinaryToVault(app: App, path: string, data: ArrayBuffer) {
     }
 }
 
-/**
- * Helper: Save text (Markdown) to vault
- */
 async function saveTextToVault(app: App, path: string, content: string) {
     const existingFile = app.vault.getAbstractFileByPath(path);
     if (existingFile instanceof TFile) {

@@ -3,6 +3,8 @@ import React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { NotesView } from "./FileView";
 import { SettingsProvider } from "./SettingsContext";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "../util/queryClient";
 
 export class ReactModalWrapper extends Modal {
     root: Root | null = null;
@@ -16,15 +18,15 @@ export class ReactModalWrapper extends Modal {
     onOpen() {
         const { contentEl } = this;
 
-        // 1. Initialize the React root on the modal's content element
         this.root = createRoot(contentEl);
         this.setTitle('Kindle notes list');
-        // 2. Render your component
-        // Tip: Pass 'this.app' so your React components can access the Vault API
+
         this.root.render(
             <React.StrictMode>
                 <SettingsProvider settings={this.settings} app={this.app}>
-                    <NotesView app={this.app} modal={this} />
+                    <QueryClientProvider client={queryClient}>
+                    <NotesView modal={this} />
+                    </QueryClientProvider>
                 </SettingsProvider>
             </React.StrictMode>
         );
