@@ -4,9 +4,8 @@ import { requestUrl } from "obsidian";
 export const getAmazonCookies = async (): Promise<string> => {
     const ses = remote.session.defaultSession;
 
-    // Get cookies for amazon.com
     const cookies = await ses.cookies.get({ domain: '.amazon.com' });
-    // Map them into a string format you can use in your headers
+
     return cookies.map(c => `${c.name}=${c.value}`).join('; ');
 };
 
@@ -30,4 +29,11 @@ export const getAmazonApi = async <T extends object>(endpointUrl: string, header
         }
     })
     return await result.json as T;
+};
+
+export const noAmazonCookies = async ():Promise<boolean> => {
+    const ses = remote.session.defaultSession;
+
+    const cookies = await ses.cookies.get({ domain: '.amazon.com' });
+    return cookies.length == 0;
 };

@@ -1,5 +1,5 @@
 import { FileData } from 'types/Notebook';
-import { getAmazonApi } from '../util/getAmazonCookies';
+import { getAmazonApi } from '../util/amazonApiUtils';
 
 
 const getNotesData = async (): Promise<FileData[]> => {

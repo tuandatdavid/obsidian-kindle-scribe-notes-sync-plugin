@@ -1,7 +1,6 @@
 import { Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS, ScribeNotesSettings, ScribeSettingsTab } from "./settings";
-import { ReactModalWrapper } from 'components/ReactModalWrapper';
-import { doAmazonLogin } from 'amazonLogin/amazonLoginModal';
+import { ReactWrapper } from 'components/ReactWrapper';
 
 // Remember to rename these classes and interfaces!
 
@@ -12,8 +11,7 @@ export default class KindleScribeNotesPlugin extends Plugin {
         await this.loadSettings();
 
         this.addRibbonIcon('notebook-pen', 'Scribe notes convert', async () => {
-            void doAmazonLogin();
-            new ReactModalWrapper(this.app, { openRouterKey: this.settings.openRouterApiKey, model: this.settings.model }).open();
+            new ReactWrapper(this.app, { openRouterKey: this.settings.openRouterApiKey, model: this.settings.model }).open();
         });
 
         this.addSettingTab(new ScribeSettingsTab(this.app, this));

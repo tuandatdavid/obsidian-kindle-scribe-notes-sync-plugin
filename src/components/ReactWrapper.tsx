@@ -1,13 +1,16 @@
 import { App, Modal } from "obsidian";
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
-import { NotesView } from "./FileView";
-import { SettingsProvider } from "./SettingsContext";
+import { SettingsProvider } from "../context/SettingsContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../util/queryClient";
+import { MainView } from "views/MainView";
+import '../main.css';
+import { JobsContextProvider } from "context/JobContext";
 
-export class ReactModalWrapper extends Modal {
+export class ReactWrapper extends Modal {
     root: Root | null = null;
+    hidden: boolean = true;
     private settings: { openRouterKey: string, model: string };
 
     constructor(app: App, settings: { openRouterKey: string, model: string } ) {
@@ -24,7 +27,9 @@ export class ReactModalWrapper extends Modal {
             <React.StrictMode>
                 <SettingsProvider settings={this.settings} app={this.app}>
                     <QueryClientProvider client={queryClient}>
-                        <NotesView modal={this} />
+                        <JobsContextProvider>
+                            <MainView />
+                        </JobsContextProvider>
                     </QueryClientProvider>
                 </SettingsProvider>
             </React.StrictMode>
@@ -32,7 +37,6 @@ export class ReactModalWrapper extends Modal {
     }
 
     onClose() {
-        this.root?.unmount();
         this.root = null;
         
         this.contentEl.empty();

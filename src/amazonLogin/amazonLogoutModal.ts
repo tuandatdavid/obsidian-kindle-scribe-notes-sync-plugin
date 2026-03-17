@@ -16,7 +16,7 @@ export const amazonLogoutModal = () => {
     modal.show();
   });
 
-  return new Promise((resolve, rej) => {
+  return new Promise((resolve) => {
     try {
       // If user is on the read.amazon.com url, we can safely assume they are logged in
       modal.webContents.on('did-navigate', (_event, url) => {

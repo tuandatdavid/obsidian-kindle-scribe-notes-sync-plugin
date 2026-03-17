@@ -26,3 +26,15 @@
     max-height: 500px;
     transition: height 0.15s ease-out;
  }
+ .non-notes-content {
+     height: 340px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+ }
+
+ .error-text {
+    display: grid;
+    align-items: center;
+    justify-items: center;
+ }
