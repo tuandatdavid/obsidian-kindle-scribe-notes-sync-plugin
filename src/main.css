@@ -38,3 +38,12 @@
     align-items: center;
     justify-items: center;
  }
+
+ .file-row {
+    display: grid;
+    margin-left: 30px;
+    margin-right: 30px;
+    grid-template-columns: 1fr auto;
+    margin-top: 15px;
+    align-items: center;
+ }

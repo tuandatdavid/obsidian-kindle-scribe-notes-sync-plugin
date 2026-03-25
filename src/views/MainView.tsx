@@ -24,14 +24,15 @@ const NotesError = ({ refetch }: { refetch: RefetchFn }) => {
 };
 
 const collectNotes = (files: FileData[]): FileData[] => {
-    return files.flatMap(item => item.type == 'folder' ? collectNotes(item.items): item);
+    return files.flatMap(item => item.type == 'folder' ? [...collectNotes(item.items), item]: item);
 }
 
 const NotesControls = ({ contentLoading, refetch, setIsLoggedOut, data }: { contentLoading: boolean, refetch: RefetchFn, setIsLoggedOut: () => void, data: FileData[] }) => {
     const notes = collectNotes(data);
-    console.log(notes);
+    const files = notes.filter(item => item.type == 'notebook').length;
+    const folders = notes.filter(item => item.type == 'folder').length;
     return <div style={{ display: 'grid', gap: '15px', justifyContent: 'end', paddingBottom: '15px', gridAutoFlow: 'column' }}>
-        <div>Showing data for {notes.length} in Vault</div>
+        <div>Showing data for {files} notes, {folders} folders in Vault</div>
         <button disabled={contentLoading} onClick={() => {
             void refetch();
         }}>{contentLoading ? <LoaderCircle className="rotate" /> : <RefreshCcwDot />}</button>

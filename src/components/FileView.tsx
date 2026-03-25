@@ -33,16 +33,12 @@ const Note = ({ file }: { file: FileData }) => {
         : null;
     const { downloadOnly, downloadAndProcess } = useNotebook(file.id, file.title);
 
-    return (<div className="file-row" style={{
-        display: 'grid', marginLeft: '30px', marginRight: '30px',
-        gridTemplateColumns: '1fr auto',
-        marginTop: '15px', alignItems: 'center'
-    }}>
+    return (<div className="file-row">
         {file.title}
         {!settings.openRouterKey && <Tooltip id="ai-download-tooltip" place="top">No OpenRouter API key configured. Go to Settings → Kindle Scribe Notes to add one.</Tooltip>}
         {activeJob
             ? <RenderJobProgress percentage={activeJob.progress} />
-            : <div style={{ display: 'flex', gap: '8px' }}>
+            : <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button onClick={downloadOnly}><Download /></button>
                 or
                 <button disabled={!settings.openRouterKey} onClick={downloadAndProcess} data-tooltip-id="ai-download-tooltip"><Download /> + <Bot /></button>
@@ -53,7 +49,7 @@ const Note = ({ file }: { file: FileData }) => {
 
 export const NotesList = ({ objects }: { objects: FileData[] }) => {
     const renderFolder = (folder: FileData) => {
-        return <details>
+        return <details className="file-row" style={{ marginRight: 0}}>
             <summary>{folder.title}</summary>
             <NotesList objects={folder.items} />
         </details>;
