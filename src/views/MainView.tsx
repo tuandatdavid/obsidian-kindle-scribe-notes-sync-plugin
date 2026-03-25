@@ -7,6 +7,8 @@ import { LoaderCircle, RefreshCcwDot } from "lucide-react";
 import React, { useState } from "react";
 import { notesService } from "services/NotesService";
 import { FileData } from "types/Notebook";
+import { noAmazonCookies } from "util/amazonApiUtils";
+import { NoCookiesView } from './NoCookiesView';
 
 type RefetchFn = () => Promise<QueryObserverResult<FileData[], Error>>;
 
@@ -49,6 +51,7 @@ export const MainView = () => {
                 setIsLoggedOut={() => setIsLoggedOut(true)}
                 refetch={refetch} />
             <div className="notes-content">
+                {noAmazonCookies().then(() => <NoCookiesView />)}
                 {error ? <NotesError refetch={refetch} /> : contentLoading ? <LoadingComponent /> : <NotesList objects={data} />}
             </div>
         </div>

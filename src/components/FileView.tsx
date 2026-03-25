@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { FileData } from "types/Notebook";
 import { useNotebook } from "../util/loadNotebookData";
 import { JobStatus, useJobs } from "context/JobContext";

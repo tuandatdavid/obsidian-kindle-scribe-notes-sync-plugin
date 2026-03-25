@@ -35,6 +35,7 @@
 		"obsidian": "latest",
 		"react": "^19.2.4",
 		"react-dom": "^19.2.4",
-		"untar": "^0.2.9"
+		"untar": "^0.2.9",
+		"workerpool": "^10.0.1"
 	}
 }
