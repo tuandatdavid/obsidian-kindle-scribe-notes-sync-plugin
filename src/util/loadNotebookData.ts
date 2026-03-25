@@ -2,7 +2,6 @@ import { App, arrayBufferToBase64, Notice } from "obsidian";
 import { convertTarToPdf, exportImagesFromTar } from "./saveToPdf";
 import { processNotebookPages } from "services/OpenRouterService";
 import { getAmazonApi, getChunk } from "./amazonApiUtils";
-// import { JobType, useJobs } from "context/JobContext";
 import { useSettings } from "context/SettingsContext";
 import { useCallback } from "react";
 import { jobManager } from "pool";
@@ -13,40 +12,72 @@ type Metadata = {
 };
 
 type UseNotebook = {
-    downloadNotebook: () => void
+    downloadOnly: () => void;
+    downloadAndProcess: () => void;
 };
+
+/** Fetch all pages and save a PDF. Returns the extracted images as base64. */
+async function fetchPages(
+    app: App,
+    fileId: string,
+    noteName: string,
+    update: (p: number) => void
+): Promise<string[]> {
+    update(0);
+    const pagesData: ArrayBuffer[] = [];
+
+    const { metadata, renderingToken } = await getAmazonApi<Metadata>(
+        `https://read.amazon.com/openNotebook?notebookId=${fileId}&marketplaceId=ATVPDKIKX0DER`
+    );
+    new Notice(`Starting fetch for ${metadata.totalPages} pages...`);
+
+    for (let i = 0; i < metadata.totalPages; i += 3) {
+        const end = Math.min(i + 2, metadata.totalPages);
+        update((end / metadata.totalPages) * 50);
+        new Notice(`Fetching pages ${i + 1}-${end} out of ${metadata.totalPages}`);
+        const chunk = await getChunk(
+            `https://read.amazon.com/renderPage?startPage=${i}&endPage=${end}&width=1860&height=2480&dpi=160`,
+            renderingToken
+        );
+        pagesData.push(chunk);
+    }
+
+    const images = await exportImagesFromTar(pagesData.map(page => page.slice(0)));
+    await convertTarToPdf(app, pagesData, noteName);
+    update(50);
+
+    return images.map(image => arrayBufferToBase64(image.data.buffer as ArrayBuffer));
+}
+
 export const useNotebook = (fileId: string, noteName: string): UseNotebook => {
     const { app, settings } = useSettings();
 
-    const downloadNotebook = useCallback(async (update: (p: number) => void) => {
-        update(0);
-        const { openRouterKey, model } = settings;
-        const pagesData: ArrayBuffer[] = [];
-        
-        const { metadata, renderingToken } = await getAmazonApi<Metadata>(`https://read.amazon.com/openNotebook?notebookId=${fileId}&marketplaceId=ATVPDKIKX0DER`);
-        new Notice(`Starting fetch for ${metadata.totalPages} pages...`);
-
-        for (let i = 0; i < metadata.totalPages; i += 3) {
-            const end = Math.min(i + 2, metadata.totalPages);
-            update(end / metadata.totalPages / 100 / 2);
-            new Notice(`Fetching pages ${i + 1}-${end} out of ${metadata.totalPages}`);
-
-            const chunk = await getChunk(`https://read.amazon.com/renderPage?startPage=${i}&endPage=${end}&width=1860&height=2480&dpi=160`, renderingToken);
-            pagesData.push(chunk);
-        }
-
-        const images = await exportImagesFromTar(pagesData.map(page => page.slice(0)));
-        update(50);
-        await convertTarToPdf(app, pagesData, noteName);
+    const downloadOnlyTask = useCallback(async (update: (p: number) => void) => {
+        await fetchPages(app, fileId, noteName, update);
         update(100);
-        
-        await processNotebookPages(app, images.map(image => arrayBufferToBase64(image.data.buffer as ArrayBuffer)), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
-        new Notice(`note ${noteName} converted`)
-    }, [settings]);
+        new Notice(`Downloaded "${noteName}" — PDF saved.`);
+    }, [app, fileId, noteName]);
 
-    const scheduleNotebook = () => jobManager.addJob(fileId, downloadNotebook);
+    const downloadAndProcessTask = useCallback(async (update: (p: number) => void) => {
+        const { openRouterKey, model } = settings;
 
-    return { downloadNotebook: scheduleNotebook };
+        const images = await fetchPages(app, fileId, noteName, update);
+        await processNotebookPages(
+            app,
+            images,
+            'scribe notes ai/' + noteName,
+            noteName,
+            openRouterKey,
+            model
+        );
+        update(100);
+        new Notice(`Note "${noteName}" downloaded and processed.`);
+    }, [app, fileId, noteName, settings]);
+
+    return {
+        downloadOnly: () => void jobManager.addJob(`${fileId}-dl`, downloadOnlyTask),
+        downloadAndProcess: () => void jobManager.addJob(`${fileId}-proc`, downloadAndProcessTask),
+    };
 }
 
 export async function getNotebookData(app: App, fileId: string, noteName: string, openRouterKey: string, model: string) {

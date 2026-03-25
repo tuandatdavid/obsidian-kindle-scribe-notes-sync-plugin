@@ -23,8 +23,15 @@ const NotesError = ({ refetch }: { refetch: RefetchFn }) => {
     </div>;
 };
 
-const NotesControls = ({ contentLoading, refetch, setIsLoggedOut }: { contentLoading: boolean, refetch: RefetchFn, setIsLoggedOut: () => void }) => {
+const collectNotes = (files: FileData[]): FileData[] => {
+    return files.flatMap(item => item.type == 'folder' ? collectNotes(item.items): item);
+}
+
+const NotesControls = ({ contentLoading, refetch, setIsLoggedOut, data }: { contentLoading: boolean, refetch: RefetchFn, setIsLoggedOut: () => void, data: FileData[] }) => {
+    const notes = collectNotes(data);
+    console.log(notes);
     return <div style={{ display: 'grid', gap: '15px', justifyContent: 'end', paddingBottom: '15px', gridAutoFlow: 'column' }}>
+        <div>Showing data for {notes.length} in Vault</div>
         <button disabled={contentLoading} onClick={() => {
             void refetch();
         }}>{contentLoading ? <LoaderCircle className="rotate" /> : <RefreshCcwDot />}</button>
@@ -39,7 +46,7 @@ export const MainView = () => {
     const [hasCookies, setHasCookies] = useState<boolean | null>(null);
 
     useEffect(() => {
-        noAmazonCookies().then(missing => setHasCookies(!missing));
+        void noAmazonCookies().then(missing => setHasCookies(!missing));
     }, []);
 
     const { data, isLoading, isRefetching, refetch, error } = useQuery({
@@ -57,6 +64,7 @@ export const MainView = () => {
     return (
         <div className="file-modal">
             <NotesControls
+                data={data || []}
                 contentLoading={contentLoading}
                 setIsLoggedOut={() => setIsLoggedOut(true)}
                 refetch={refetch} />

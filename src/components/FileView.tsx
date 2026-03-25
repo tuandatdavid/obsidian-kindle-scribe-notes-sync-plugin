@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { FileData } from "types/Notebook";
 import { useNotebook } from "../util/loadNotebookData";
 import { jobManager } from "pool";
+import { Bot, Download } from "lucide-react";
+import { useSettings } from "context/SettingsContext";
+import { Tooltip } from "react-tooltip";
 
 const RenderJobProgress = ({ percentage }: { percentage: number }) => {
     const filled = Math.round(percentage / 10);
@@ -13,27 +16,37 @@ const RenderJobProgress = ({ percentage }: { percentage: number }) => {
     );
 };
 
+
 const Note = ({ file }: { file: FileData }) => {
-    // Re-render whenever the jobManager broadcasts an update.
     const [, setTick] = useState(0);
     useEffect(() => {
         const unsub = jobManager.subscribe(() => setTick(t => t + 1));
         return () => { unsub(); };
     }, []);
 
-    const job = jobManager.jobs.get(file.id);
-    const isActive = job && job.status !== 'completed' && job.status !== 'failed';
-    const { downloadNotebook } = useNotebook(file.id, file.title);
+    const { settings } = useSettings();
 
-    return (<div style={{
+    const dlJob = jobManager.jobs.get(`${file.id}-dl`);
+    const procJob = jobManager.jobs.get(`${file.id}-proc`);
+    const activeJob = (dlJob && dlJob.status !== 'completed' && dlJob.status !== 'failed') ? dlJob
+        : (procJob && procJob.status !== 'completed' && procJob.status !== 'failed') ? procJob
+        : null;
+    const { downloadOnly, downloadAndProcess } = useNotebook(file.id, file.title);
+
+    return (<div className="file-row" style={{
         display: 'grid', marginLeft: '30px', marginRight: '30px',
         gridTemplateColumns: '1fr auto',
         marginTop: '15px', alignItems: 'center'
     }}>
         {file.title}
-        {isActive
-            ? <RenderJobProgress percentage={job.progress} />
-            : <button onClick={downloadNotebook}>Download and process note</button>
+        {!settings.openRouterKey && <Tooltip id="ai-download-tooltip" place="top">No OpenRouter API key configured. Go to Settings → Kindle Scribe Notes to add one.</Tooltip>}
+        {activeJob
+            ? <RenderJobProgress percentage={activeJob.progress} />
+            : <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={downloadOnly}><Download /></button>
+                or
+                <button disabled={!settings.openRouterKey} onClick={downloadAndProcess} data-tooltip-id="ai-download-tooltip"><Download /> + <Bot /></button>
+            </div>
         }
     </div>);
 }
