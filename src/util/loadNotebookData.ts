@@ -29,7 +29,6 @@ async function fetchPages(
     const { metadata, renderingToken } = await getAmazonApi<Metadata>(
         `https://read.amazon.com/openNotebook?notebookId=${fileId}&marketplaceId=ATVPDKIKX0DER`
     );
-    new Notice(`Starting fetch for ${metadata.totalPages} pages...`);
 
     for (let i = 0; i < metadata.totalPages; i += 3) {
         const end = Math.min(i + 2, metadata.totalPages);

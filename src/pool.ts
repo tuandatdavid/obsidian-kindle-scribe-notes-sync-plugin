@@ -51,7 +51,7 @@ class JobManager {
         while (this.running < this.concurrency && this.queue.length > 0 && !this.unloaded) {
             const next = this.queue.shift()!;
             this.running++;
-            this.runJob(next.id, next.task).finally(() => {
+            void this.runJob(next.id, next.task).finally(() => {
                 this.running--;
                 this.drain();
             });
