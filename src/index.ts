@@ -1,6 +1,7 @@
 import { Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS, ScribeNotesSettings, ScribeSettingsTab } from "./settings";
 import { ReactWrapper } from 'components/ReactWrapper';
+import { jobManager } from './pool';
 
 // Remember to rename these classes and interfaces!
 
@@ -22,12 +23,10 @@ export default class KindleScribeNotesPlugin extends Plugin {
         // 	new Notice("Click");
         // });
 
-        // When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-        
-
     }
 
     onunload() {
+        jobManager.onUnload();
     }
 
     async loadSettings() {

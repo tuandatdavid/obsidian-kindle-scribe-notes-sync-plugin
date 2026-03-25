@@ -2,9 +2,10 @@ import { App, arrayBufferToBase64, Notice } from "obsidian";
 import { convertTarToPdf, exportImagesFromTar } from "./saveToPdf";
 import { processNotebookPages } from "services/OpenRouterService";
 import { getAmazonApi, getChunk } from "./amazonApiUtils";
-import { JobType, useJobs } from "context/JobContext";
+// import { JobType, useJobs } from "context/JobContext";
 import { useSettings } from "context/SettingsContext";
 import { useCallback } from "react";
+import { jobManager } from "pool";
 
 type Metadata = {
     "metadata": { "currentPage": number, "modificationTime": number, "title": string, "totalPages": number },
@@ -15,11 +16,10 @@ type UseNotebook = {
     downloadNotebook: () => void
 };
 export const useNotebook = (fileId: string, noteName: string): UseNotebook => {
-    const { updateJobStatus, addJob, finishJob } = useJobs();
     const { app, settings } = useSettings();
 
-    const downloadNotebook = useCallback(async () => {
-        updateJobStatus(fileId, { jobType: JobType.AI, completedPercentage: 0 });
+    const downloadNotebook = useCallback(async (update: (p: number) => void) => {
+        update(0);
         const { openRouterKey, model } = settings;
         const pagesData: ArrayBuffer[] = [];
         
@@ -28,7 +28,7 @@ export const useNotebook = (fileId: string, noteName: string): UseNotebook => {
 
         for (let i = 0; i < metadata.totalPages; i += 3) {
             const end = Math.min(i + 2, metadata.totalPages);
-            updateJobStatus(fileId, { jobType: JobType.AI, completedPercentage: end / metadata.totalPages / 100 / 2 });
+            update(end / metadata.totalPages / 100 / 2);
             new Notice(`Fetching pages ${i + 1}-${end} out of ${metadata.totalPages}`);
 
             const chunk = await getChunk(`https://read.amazon.com/renderPage?startPage=${i}&endPage=${end}&width=1860&height=2480&dpi=160`, renderingToken);
@@ -36,16 +36,15 @@ export const useNotebook = (fileId: string, noteName: string): UseNotebook => {
         }
 
         const images = await exportImagesFromTar(pagesData.map(page => page.slice(0)));
-        updateJobStatus(fileId, { jobType: JobType.AI, completedPercentage: 50 });
+        update(50);
         await convertTarToPdf(app, pagesData, noteName);
-        updateJobStatus(fileId, { jobType: JobType.AI, completedPercentage: 100 });
+        update(100);
         
         await processNotebookPages(app, images.map(image => arrayBufferToBase64(image.data.buffer as ArrayBuffer)), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
         new Notice(`note ${noteName} converted`)
-        finishJob(fileId, JobType.AI);
-    }, [settings, updateJobStatus]);
+    }, [settings]);
 
-    const scheduleNotebook = () => addJob({ job: fileId, jobFn: downloadNotebook, jobStatus: { jobType: JobType.AI, completedPercentage: 0 } });
+    const scheduleNotebook = () => jobManager.addJob(fileId, downloadNotebook);
 
     return { downloadNotebook: scheduleNotebook };
 }

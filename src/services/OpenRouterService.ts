@@ -7,9 +7,9 @@ interface NotebookAnalysis {
 }
 
 async function analyzeNotebookPage(
-    imgBase64: string, 
-    apiKey: string, 
-    modelId: string, 
+    imgBase64: string,
+    apiKey: string,
+    modelId: string,
     maxRetries: number = 3
 ): Promise<NotebookAnalysis> {
     const openRouter = new OpenRouter({
@@ -49,13 +49,14 @@ async function analyzeNotebookPage(
                     ],
                     temperature: 0.3,
                     responseFormat: { type: "json_object" }
-            }});
+                }
+            });
 
             if (response.choices[0] !== undefined) {
                 const content = response.choices[0].message.content as string;
                 //todo: add validation
                 return JSON.parse(content) as NotebookAnalysis;
-            } 
+            }
 
         } catch (error) {
             console.error("Analysis failed:", error);
@@ -64,7 +65,7 @@ async function analyzeNotebookPage(
             await new Promise(resolve => setTimeout(resolve, 5000));
         }
     }
-    
+
     throw new Error("Max retries reached");
 }
 
@@ -74,8 +75,8 @@ async function analyzeNotebookPage(
  */
 export async function processNotebookPages(
     app: App,
-    imageB64List: string[], 
-    folderPath: string, 
+    imageB64List: string[],
+    folderPath: string,
     fileName: string,
     apiKey: string,
     modelId: string
@@ -83,7 +84,7 @@ export async function processNotebookPages(
     const dirPath = normalizePath(folderPath);
     const attachmentPath = normalizePath(`${dirPath}/attachments`);
     let fullMarkdown = "";
-        
+
     // Ensure folders exist
     if (!(await app.vault.adapter.exists(dirPath))) await app.vault.createFolder(dirPath);
     if (!(await app.vault.adapter.exists(attachmentPath))) await app.vault.createFolder(attachmentPath);
@@ -91,20 +92,19 @@ export async function processNotebookPages(
 
     for (let i = 0; i < imageB64List.length; i++) {
         const imgBase64 = imageB64List[i];
-        if(!imgBase64)
+        if (!imgBase64)
             continue;
-        new Notice(`Analyzing page ${i + 1} of ${imageB64List.length}...`);
         try {
             const analysis: NotebookAnalysis = await analyzeNotebookPage(imgBase64, apiKey, modelId);
             let pageText = analysis.text;
 
             for (const crop of analysis.crops) {
-                const cropFileName = `${fileName}_pg${i+1}_${crop.id}.png`;
+                const cropFileName = `${fileName}_pg${i + 1}_${crop.id}.png`;
                 const cropPath = `${attachmentPath}/${cropFileName}`;
 
                 // Crop the image using the helper
                 const croppedBlob = await cropImage(imgBase64, crop.box_2d);
-                
+
                 // Save the cropped image to vault
                 await saveBinaryToVault(app, cropPath, await croppedBlob.arrayBuffer());
 
@@ -150,7 +150,7 @@ async function cropImage(base64: string, box: [number, number, number, number]):
             canvas.height = height;
 
             ctx.drawImage(img, xmin, ymin, width, height, 0, 0, width, height);
-            
+
             canvas.toBlob((blob) => {
                 if (blob) resolve(blob);
                 else reject(new Error("Canvas to Blob failed"));

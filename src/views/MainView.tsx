@@ -4,10 +4,10 @@ import { amazonLogoutModal } from "amazonLogin/amazonLogoutModal";
 import { NotesList } from "components/FileView";
 import { LoadingComponent } from "components/LoadingComponent";
 import { LoaderCircle, RefreshCcwDot } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { notesService } from "services/NotesService";
 import { FileData } from "types/Notebook";
-import { noAmazonCookies } from "util/amazonApiUtils";
+import { noAmazonCookies } from "../util/amazonApiUtils";
 import { NoCookiesView } from './NoCookiesView';
 
 type RefetchFn = () => Promise<QueryObserverResult<FileData[], Error>>;
@@ -36,6 +36,12 @@ const NotesControls = ({ contentLoading, refetch, setIsLoggedOut }: { contentLoa
 
 export const MainView = () => {
     const [isLoggedOut, setIsLoggedOut] = useState(false);
+    const [hasCookies, setHasCookies] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        noAmazonCookies().then(missing => setHasCookies(!missing));
+    }, []);
+
     const { data, isLoading, isRefetching, refetch, error } = useQuery({
         queryKey: ['notes'],
         queryFn: notesService.getNotesData,
@@ -44,6 +50,10 @@ export const MainView = () => {
 
     const contentLoading = !data || isLoading || isRefetching;
 
+    if (hasCookies === false) {
+        return <NoCookiesView />;
+    }
+
     return (
         <div className="file-modal">
             <NotesControls
@@ -51,7 +61,6 @@ export const MainView = () => {
                 setIsLoggedOut={() => setIsLoggedOut(true)}
                 refetch={refetch} />
             <div className="notes-content">
-                {noAmazonCookies().then(() => <NoCookiesView />)}
                 {error ? <NotesError refetch={refetch} /> : contentLoading ? <LoadingComponent /> : <NotesList objects={data} />}
             </div>
         </div>
