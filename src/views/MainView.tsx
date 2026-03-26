@@ -24,7 +24,7 @@ const NotesError = ({ refetch }: { refetch: RefetchFn }) => {
 };
 
 const collectNotes = (files: FileData[]): FileData[] => {
-    return files.flatMap(item => item.type == 'folder' ? [...collectNotes(item.items), item]: item);
+    return files.flatMap(item => item.type == 'folder' ? [...collectNotes(item.items), item] : item);
 }
 
 const NotesControls = ({ contentLoading, refetch, setIsLoggedOut, data }: { contentLoading: boolean, refetch: RefetchFn, setIsLoggedOut: () => void, data: FileData[] }) => {
@@ -51,7 +51,7 @@ export const MainView = () => {
     }, []);
 
     const { data, isLoading, isRefetching, refetch, error } = useQuery({
-        queryKey: ['notes'],
+        queryKey: ['notes', isLoggedOut],
         queryFn: notesService.getNotesData,
         enabled: !isLoggedOut,
     });
@@ -59,7 +59,7 @@ export const MainView = () => {
     const contentLoading = !data || isLoading || isRefetching;
 
     if (hasCookies === false) {
-        return <NoCookiesView setLoggedOut={(value) => {setIsLoggedOut(value); void refetch();}} />;
+        return <NoCookiesView setLoggedOut={(value) => { setIsLoggedOut(value); void refetch(); }} />;
     }
 
     return (
