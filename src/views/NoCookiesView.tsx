@@ -1,7 +1,7 @@
 import React from "react";
 import { doAmazonLogin } from "amazonLogin/doAmazonLogin";
 
-export const NoCookiesView = () => {
+export const NoCookiesView = ({ setLoggedOut }: { setLoggedOut: (loggedIn: boolean) => void}) => {
     return (
         <div className="error-text">
             <p><b>No Amazon cookies detected.</b></p>
@@ -9,7 +9,7 @@ export const NoCookiesView = () => {
                 You need to be logged in to Amazon to access your Kindle Scribe notes.<br />
                 Click the button below to log in:
             </p>
-            <button onClick={() => void doAmazonLogin()}>Login to Amazon</button>
+            <button onClick={() => void doAmazonLogin().then((value) => setLoggedOut(!(value as boolean)))}>Login to Amazon</button>
         </div>
     );
 };

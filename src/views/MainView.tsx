@@ -59,7 +59,7 @@ export const MainView = () => {
     const contentLoading = !data || isLoading || isRefetching;
 
     if (hasCookies === false) {
-        return <NoCookiesView />;
+        return <NoCookiesView setLoggedOut={(value) => setIsLoggedOut(value)} />;
     }
 
     return (
