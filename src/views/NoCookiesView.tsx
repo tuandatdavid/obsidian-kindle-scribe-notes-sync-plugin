@@ -9,7 +9,7 @@ export const NoCookiesView = ({ setLoggedOut }: { setLoggedOut: (loggedIn: boole
                 You need to be logged in to Amazon to access your Kindle Scribe notes.<br />
                 Click the button below to log in:
             </p>
-            <button onClick={() => void doAmazonLogin().then((value) => setLoggedOut(!(value as boolean)))}>Login to Amazon</button>
+            <button onClick={() => void doAmazonLogin().then(() => setLoggedOut(false))}>Login to Amazon</button>
         </div>
     );
 };
