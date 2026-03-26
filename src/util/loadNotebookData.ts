@@ -10,7 +10,8 @@ type Metadata = {
     "metadata": { "currentPage": number, "modificationTime": number, "title": string, "totalPages": number },
     "readingSessionId": string, "renderingToken": string
 };
-
+const NOTE_WIDTH = 620;
+const NOTE_HEIGHT = 877;
 type UseNotebook = {
     downloadOnly: () => void;
     downloadAndProcess: () => void;
@@ -29,18 +30,19 @@ async function fetchPages(
     const { metadata, renderingToken } = await getAmazonApi<Metadata>(
         `https://read.amazon.com/openNotebook?notebookId=${fileId}&marketplaceId=ATVPDKIKX0DER`
     );
-
+    const notice = new Notice(`Starting fetching pages for ${noteName}`);
     for (let i = 0; i < metadata.totalPages; i += 3) {
         const end = Math.min(i + 2, metadata.totalPages);
+        notice.setMessage(`Fetching pages ${i + 1}-${end} out of ${metadata.totalPages}`);
+
         update((end / metadata.totalPages) * 50);
-        new Notice(`Fetching pages ${i + 1}-${end} out of ${metadata.totalPages}`);
         const chunk = await getChunk(
-            `https://read.amazon.com/renderPage?startPage=${i}&endPage=${end}&width=1860&height=2480&dpi=160`,
+            `https://read.amazon.com/renderPage?startPage=${i}&endPage=${end}&width=${NOTE_WIDTH}&height=${NOTE_HEIGHT}&dpi=50`,
             renderingToken
         );
         pagesData.push(chunk);
     }
-
+    notice.hide();
     const images = await exportImagesFromTar(pagesData.map(page => page.slice(0)));
     await convertTarToPdf(app, pagesData, noteName);
     update(50);
@@ -85,19 +87,20 @@ export async function getNotebookData(app: App, fileId: string, noteName: string
     try {
         const { metadata, renderingToken } = await getAmazonApi<Metadata>(`https://read.amazon.com/openNotebook?notebookId=${fileId}&marketplaceId=ATVPDKIKX0DER`);
         
-        new Notice(`Starting fetch for ${metadata.totalPages} pages...`);
+        const notice = new Notice(`Starting fetch for ${metadata.totalPages} pages...`);
 
         for (let i = 0; i < metadata.totalPages; i += 3) {
             const end = Math.min(i + 2, metadata.totalPages);
-            new Notice(`Fetching pages ${i + 1}-${end} out of ${metadata.totalPages}`);
+            notice.setMessage(`Fetching pages ${i + 1}-${end} out of ${metadata.totalPages}`);
 
-            const chunk = await getChunk(`https://read.amazon.com/renderPage?startPage=${i}&endPage=${end}&width=1860&height=2480&dpi=160`, renderingToken);
+            const chunk = await getChunk(`https://read.amazon.com/renderPage?startPage=${i}&endPage=${end}&width=${NOTE_WIDTH}&height=${NOTE_HEIGHT}&dpi=50`, renderingToken);
             pagesData.push(chunk);
         }
 
         const images = await exportImagesFromTar(pagesData.map(page => page.slice(0)));
         await convertTarToPdf(app, pagesData, noteName);
         await processNotebookPages(app, images.map(image => arrayBufferToBase64(image.data.buffer as ArrayBuffer)), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
+        notice.hide();
         new Notice(`note ${noteName} converted`)
     } catch (e) {
         console.error("Notebook Data Error:", e);

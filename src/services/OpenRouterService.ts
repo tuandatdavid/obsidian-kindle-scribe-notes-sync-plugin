@@ -85,10 +85,10 @@ export async function processNotebookPages(
     const attachmentPath = normalizePath(`${dirPath}/attachments`);
     let fullMarkdown = "";
 
-    // Ensure folders exist
     if (!(await app.vault.adapter.exists(dirPath))) await app.vault.createFolder(dirPath);
     if (!(await app.vault.adapter.exists(attachmentPath))) await app.vault.createFolder(attachmentPath);
 
+    const notice = new Notice(`Analizing pages`, 0);
 
     for (let i = 0; i < imageB64List.length; i++) {
         const imgBase64 = imageB64List[i];
@@ -97,18 +97,14 @@ export async function processNotebookPages(
         try {
             const analysis: NotebookAnalysis = await analyzeNotebookPage(imgBase64, apiKey, modelId);
             let pageText = analysis.text;
-
+            notice.setMessage(`Analyzing ${i+1} out of ${imageB64List.length}`);
             for (const crop of analysis.crops) {
                 const cropFileName = `${fileName}_pg${i + 1}_${crop.id}.png`;
                 const cropPath = `${attachmentPath}/${cropFileName}`;
-
-                // Crop the image using the helper
                 const croppedBlob = await cropImage(imgBase64, crop.box_2d);
 
-                // Save the cropped image to vault
                 await saveBinaryToVault(app, cropPath, await croppedBlob.arrayBuffer());
 
-                // Replace the placeholder {{IMG_1}} with an Obsidian link ![[image.png]]
                 const placeholder = `{{${crop.id}}}`;
                 const obsidianLink = `![[${cropFileName}]]`;
                 pageText = pageText.replace(placeholder, obsidianLink);
@@ -121,6 +117,7 @@ export async function processNotebookPages(
             console.error(e);
         }
     }
+    notice.hide();
 
     // 3. Save the final Markdown file
     const mdFilePath = normalizePath(`${dirPath}/${fileName}.md`);
@@ -172,7 +169,7 @@ async function saveBinaryToVault(app: App, path: string, data: ArrayBuffer) {
 async function saveTextToVault(app: App, path: string, content: string) {
     const existingFile = app.vault.getAbstractFileByPath(path);
     if (existingFile instanceof TFile) {
-        await app.vault.modify(existingFile, content);
+        await app.vault.process(existingFile, () => content);
     } else {
         await app.vault.create(path, content);
     }
