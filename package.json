@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-kindle-scribe-notes-sync-plugin",
-	"version": "1.0.0",
+	"version": "0.2.0",
 	"description": "This is a plugin for Obsidian (https://obsidian.md) to retrieve Kindle Scribe notes",
 	"type": "module",
 	"scripts": {
