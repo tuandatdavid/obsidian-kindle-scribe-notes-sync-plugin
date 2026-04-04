@@ -1,4 +1,4 @@
-import { OpenRouter } from '@openrouter/sdk';
+import { OpenRouter } from '@mistralai/mistralai';
 import { Notice, normalizePath, TFile, App } from 'obsidian';
 
 interface NotebookAnalysis {
