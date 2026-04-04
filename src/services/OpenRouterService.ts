@@ -1,4 +1,4 @@
-import { OpenRouter } from '@mistralai/mistralai';
+import { Mistral } from "@mistralai/mistralai";
 import { Notice, normalizePath, TFile, App } from 'obsidian';
 
 interface NotebookAnalysis {
@@ -12,7 +12,7 @@ async function analyzeNotebookPage(
     modelId: string,
     maxRetries: number = 3
 ): Promise<NotebookAnalysis> {
-    const openRouter = new OpenRouter({
+    const mistral = new Mistral({
         apiKey
     });
     const prompt = `
@@ -32,8 +32,7 @@ async function analyzeNotebookPage(
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-            const response = await openRouter.chat.send({
-                chatGenerationParams: {
+            const response = await mistral.chat.complete({
                     model: modelId,
                     messages: [
                         {
@@ -49,7 +48,7 @@ async function analyzeNotebookPage(
                     ],
                     temperature: 0.3,
                     responseFormat: { type: "json_object" }
-                }
+                
             });
 
             if (response.choices[0] !== undefined) {
