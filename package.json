@@ -28,7 +28,6 @@
 	},
 	"dependencies": {
 		"@mistralai/mistralai": "^2.1.2",
-		"@openrouter/sdk": "^0.9.11",
 		"@tanstack/react-query": "^5.90.21",
 		"js-untar": "^2.0.0",
 		"jspdf": "^4.1.0",

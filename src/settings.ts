@@ -2,13 +2,13 @@ import {App, PluginSettingTab, Setting } from "obsidian";
 import KindleScribeNotesPlugin from "./index";
 
 export interface ScribeNotesSettings {
-	openRouterApiKey: string;
+	mistralApiKey: string;
 	model: string
 }
 
 export const DEFAULT_SETTINGS: ScribeNotesSettings = {
-	openRouterApiKey: '',
-	model: 'google/gemini-3.1-flash-lite-preview'
+	mistralApiKey: '',
+	model: 'mistral-small-latest'
 }
 
 export class ScribeSettingsTab extends PluginSettingTab {
@@ -25,17 +25,17 @@ export class ScribeSettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Openrouter API key')
-			.setDesc('Enter your openrouter API key. This is going to be stored in data.json file.') // Added period
+			.setName('Mistral API key')
+			.setDesc('Enter your Mistral API key. This is going to be stored in data.json file.')
 			.addText(text => {
 				text.inputEl.type = 'password';
 
 				//eslint-disable-next-line obsidianmd/ui/sentence-case
-				text.setPlaceholder('sk-or-v1-...')
-					.setValue(this.plugin.settings.openRouterApiKey)
+				text.setPlaceholder('...')
+					.setValue(this.plugin.settings.mistralApiKey)
 					.onChange(async (value) => {
 						// Update the setting and save to data.json
-						this.plugin.settings.openRouterApiKey = value.trim();
+						this.plugin.settings.mistralApiKey = value.trim();
 						await this.plugin.saveSettings();
 					});
 			});
@@ -45,7 +45,7 @@ export class ScribeSettingsTab extends PluginSettingTab {
 			.setDesc('Enter your chosen model')
 			.addText(text => {
 				//eslint-disable-next-line obsidianmd/ui/sentence-case
-				text.setPlaceholder('google/gemini-3-flash-preview')
+				text.setPlaceholder('mistral-small-latest')
 					.setValue(this.plugin.settings.model)
 					.onChange(async (value) => {
 						// Update the setting and save to data.json
