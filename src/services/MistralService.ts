@@ -87,7 +87,7 @@ export async function processNotebookPages(
     if (!(await app.vault.adapter.exists(dirPath))) await app.vault.createFolder(dirPath);
     if (!(await app.vault.adapter.exists(attachmentPath))) await app.vault.createFolder(attachmentPath);
 
-    const notice = new Notice(`Analizing pages`, 0);
+    const notice = new Notice(`Analyzing pages`, 0);
 
     for (let i = 0; i < imageB64List.length; i++) {
         const imgBase64 = imageB64List[i];
