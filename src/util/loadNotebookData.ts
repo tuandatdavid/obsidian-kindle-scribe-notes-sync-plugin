@@ -1,6 +1,6 @@
 import { App, arrayBufferToBase64, Notice } from "obsidian";
 import { convertTarToPdf, exportImagesFromTar } from "./saveToPdf";
-import { processNotebookPages } from "services/OpenRouterService";
+import { processNotebookPages } from "services/MistralService";
 import { getAmazonApi, getChunk } from "./amazonApiUtils";
 import { useSettings } from "context/SettingsContext";
 import { useCallback } from "react";
@@ -60,7 +60,7 @@ export const useNotebook = (fileId: string, noteName: string): UseNotebook => {
     }, [app, fileId, noteName]);
 
     const downloadAndProcessTask = useCallback(async (update: (p: number) => void) => {
-        const { openRouterKey, model } = settings;
+        const { mistralApiKey, model } = settings;
 
         const images = await fetchPages(app, fileId, noteName, update);
         await processNotebookPages(
@@ -68,7 +68,7 @@ export const useNotebook = (fileId: string, noteName: string): UseNotebook => {
             images,
             'scribe notes ai/' + noteName,
             noteName,
-            openRouterKey,
+            mistralApiKey,
             model
         );
         update(100);
@@ -81,7 +81,7 @@ export const useNotebook = (fileId: string, noteName: string): UseNotebook => {
     };
 }
 
-export async function getNotebookData(app: App, fileId: string, noteName: string, openRouterKey: string, model: string) {
+export async function getNotebookData(app: App, fileId: string, noteName: string, mistralApiKey: string, model: string) {
     const pagesData: ArrayBuffer[] = [];
 
     try {
@@ -99,7 +99,7 @@ export async function getNotebookData(app: App, fileId: string, noteName: string
 
         const images = await exportImagesFromTar(pagesData.map(page => page.slice(0)));
         await convertTarToPdf(app, pagesData, noteName);
-        await processNotebookPages(app, images.map(image => arrayBufferToBase64(image.data.buffer as ArrayBuffer)), 'scribe notes ai/' + noteName, noteName, openRouterKey, model);
+        await processNotebookPages(app, images.map(image => arrayBufferToBase64(image.data.buffer as ArrayBuffer)), 'scribe notes ai/' + noteName, noteName, mistralApiKey, model);
         notice.hide();
         new Notice(`note ${noteName} converted`)
     } catch (e) {

@@ -35,13 +35,13 @@ const Note = ({ file }: { file: FileData }) => {
 
     return (<div className="file-row">
         {file.title}
-        {!settings.openRouterKey && <Tooltip id="ai-download-tooltip" place="top">No OpenRouter API key configured. Go to Settings → Kindle Scribe Notes to add one.</Tooltip>}
+        {!settings.mistralApiKey && <Tooltip id="ai-download-tooltip" place="top">No Mistral API key configured. Go to Settings → Kindle Scribe Notes to add one.</Tooltip>}
         {activeJob
             ? <RenderJobProgress percentage={activeJob.progress} />
             : <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button onClick={downloadOnly}><Download /></button>
                 or
-                <button disabled={!settings.openRouterKey} onClick={downloadAndProcess} data-tooltip-id="ai-download-tooltip"><Download /> + <Bot /></button>
+                <button disabled={!settings.mistralApiKey} onClick={downloadAndProcess} data-tooltip-id="ai-download-tooltip"><Download /> + <Bot /></button>
             </div>
         }
     </div>);

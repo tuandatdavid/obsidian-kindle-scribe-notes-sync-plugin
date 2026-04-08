@@ -11,9 +11,9 @@ import { JobsContextProvider } from "context/JobContext";
 export class ReactWrapper extends Modal {
     root: Root | null = null;
     hidden: boolean = true;
-    private settings: { openRouterKey: string, model: string };
+    private settings: { mistralApiKey: string, model: string };
 
-    constructor(app: App, settings: { openRouterKey: string, model: string } ) {
+    constructor(app: App, settings: { mistralApiKey: string, model: string } ) {
         super(app);
         this.settings = settings;
     }

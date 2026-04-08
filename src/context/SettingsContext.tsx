@@ -4,7 +4,7 @@ import React, { createContext, useContext } from 'react';
 //todo: better types
 interface SettingsContextType {
     settings: {
-        openRouterKey: string,
+        mistralApiKey: string,
         model: string,
     },
     app: App
@@ -12,7 +12,7 @@ interface SettingsContextType {
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-export const SettingsProvider: React.FC<{ children: React.ReactNode, settings: { openRouterKey: string, model: string }, app: App }> = ({ children, settings, app }) => {
+export const SettingsProvider: React.FC<{ children: React.ReactNode, settings: { mistralApiKey: string, model: string }, app: App }> = ({ children, settings, app }) => {
     return (
         <SettingsContext.Provider value={{ settings, app }}>
             {children}
